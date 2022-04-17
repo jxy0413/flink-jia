@@ -25,7 +25,7 @@ public class AppMain {
 
     private AppNotice appNotice;
 
-    private AppStart appStart;
+    private AppStart start;
 
     private List<AppDisplay> displays;
 
@@ -46,8 +46,6 @@ public class AppMain {
                 AppError appError = AppError.build();
                 this.err = appError;
             }
-
         }
-
     }
 }

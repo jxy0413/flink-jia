@@ -70,7 +70,7 @@ public class AppConfig {
     public static Integer page_during_max_ms = 20000;
 
     //每条日志发送延迟 ms
-    public static Integer log_sleep = 100;
+    public static Integer log_sleep = 0;
 
     public static String mock_date = "2021-11-11";
 

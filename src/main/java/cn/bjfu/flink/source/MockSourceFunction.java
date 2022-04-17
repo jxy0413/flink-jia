@@ -51,7 +51,8 @@ public class MockSourceFunction implements ParallelSourceFunction<String> {
         appMainBuilder.checkError();
 
         AppStart appStart = new AppStart.Builder().build();
-        appMainBuilder.appStart(appStart);
+        appMainBuilder.start(appStart);
+
         appMainBuilder.ts(ts);
 
         logList.add(appMainBuilder.build());
