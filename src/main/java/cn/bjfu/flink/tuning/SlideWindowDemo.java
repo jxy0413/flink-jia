@@ -2,15 +2,18 @@ package cn.bjfu.flink.tuning;
 
 import cn.bjfu.flink.source.MockSourceFunction;
 import cn.bjfu.flink.tuning.function.SplitTumpleWindowPAWF;
+import cn.bjfu.flink.tuning.function.SplitWindowAggFunction;
 import cn.bjfu.flink.tuning.function.UvRichFilterFunction;
 import cn.bjfu.flink.tuning.map.NewMidRichMapFunc;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.contrib.streaming.state.EmbeddedRocksDBStateBackend;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.assigners.SlidingProcessingTimeWindows;
+import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 
 /**
@@ -43,14 +46,22 @@ public class SlideWindowDemo {
 
         //统计最近一小时的uv,1秒更新一次
         ParameterTool parameterTool = ParameterTool.fromArgs(args);
-        boolean isSlidingSplit = parameterTool.getBoolean("sliding-split", false);
+        boolean isSlidingSplit = parameterTool.getBoolean("sliding-split", true);
 
         if(!isSlidingSplit){
             mapDs.windowAll(SlidingProcessingTimeWindows.of(Time.hours(1), Time.seconds(1)))
                     .reduce((v1, v2) -> v1 + v2, new SplitTumpleWindowPAWF())
                     .print();
         }else{
+            SingleOutputStreamOperator<Tuple3<String, String, Long>> reduceDs = mapDs.windowAll(TumblingProcessingTimeWindows.of(Time.seconds(1)))
+                    .reduce(
+                            (v1, v2) -> v1 + v2,
+                            new SplitTumpleWindowPAWF()
+                    );
 
+            reduceDs.keyBy(r -> 1)
+                    .process(new SplitWindowAggFunction())
+                    .print();
         }
 
         env.execute();
